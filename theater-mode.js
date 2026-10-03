@@ -3,6 +3,7 @@ class TheaterMode {
     this.$player = null;
     this.$video = null;
     this.$navigationProgress = null;
+    this.$header = null;
 
     this.theaterObserver = this.createTheaterObserver();
     this.styleObserver = this.createStyleObserver();
@@ -18,11 +19,16 @@ class TheaterMode {
   createTheaterObserver() {
     return new MutationObserver((mutations) => {
       const theaterMutation = mutations.find(
-        (mutation) => mutation.oldValue == null
+        (mutation) => mutation.attributeName === "theater"
       );
 
-      if (theaterMutation?.target?.hasAttribute("theater"))
+      if (!theaterMutation) return;
+
+      if (theaterMutation.target.hasAttribute("theater")) {
         this.onTheaterAdded();
+      } else {
+        this.onTheaterRemoved();
+      }
     });
   }
 
@@ -36,8 +42,10 @@ class TheaterMode {
   // EVENTS
   //
   onPlayerLoaded() {
-    if (this.$player.hasAttribute("theater"))
+    if (this.$player.hasAttribute("theater")) {
+      this.onTheaterAdded();
       setTimeout(() => this.scrollToFullScreen(1000), 10);
+    }
 
     this.theaterObserver.observe(this.$player, {
       attributes: true,
@@ -47,11 +55,57 @@ class TheaterMode {
   }
 
   onTheaterAdded() {
+    this.$header = document.querySelector("#masthead-container");
+    this.$header?.addEventListener("pointerleave", this.hideHeader);
+    document.addEventListener("pointermove", this.onPointerMove, {
+      passive: true,
+    });
+    document.addEventListener("fullscreenchange", this.onFullscreenChange);
+
     this.styleObserver.observe(this.$player, {
       attributes: true,
       attributeFilter: ["style"],
     });
   }
+
+  onTheaterRemoved() {
+    document.removeEventListener("pointermove", this.onPointerMove);
+    document.removeEventListener("fullscreenchange", this.onFullscreenChange);
+    this.$header?.removeEventListener("pointerleave", this.hideHeader);
+    this.hideHeader();
+  }
+
+  onFullscreenChange = () => {
+    if (document.fullscreenElement) return;
+
+    this.hideHeader();
+    setTimeout(() => {
+      if (this.$player.hasAttribute("theater"))
+        this.scrollToFullScreen(1000);
+    }, 100);
+  };
+
+  onPointerMove = (event) => {
+    if (!this.$header) return;
+
+    const isHeaderVisible = document.documentElement.hasAttribute(
+      "data-theater-header-visible"
+    );
+
+    if (event.clientY <= this.$header.offsetHeight) {
+      if (!isHeaderVisible)
+        document.documentElement.setAttribute(
+          "data-theater-header-visible",
+          ""
+        );
+    } else if (isHeaderVisible) {
+      this.hideHeader();
+    }
+  };
+
+  hideHeader = () => {
+    document.documentElement.removeAttribute("data-theater-header-visible");
+  };
 
   // HELPERS
   //

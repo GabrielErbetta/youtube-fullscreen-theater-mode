@@ -10,6 +10,7 @@ But check out my inspirations [Better YouTube Theatre Mode](https://github.com/S
 
 Makes YouTube theater mode fullscreen, using the entire height of the browser viewport for the video player. Works for regular videos and for livestreams.
 - Page is scrolled to hide the YouTube header
+- The YouTube header appears when the pointer reaches the top edge of the viewport
 - Chat is also resized to occupy the entire height
 - Doesn't change the page when theater mode is disabled
 

@@ -2,8 +2,28 @@ body {
   overflow-anchor: none;
 }
 
+html:has(ytd-watch-flexy[theater]) {
+  overflow: hidden;
+  scrollbar-width: none;
+}
+
+html:has(ytd-watch-flexy[theater])::-webkit-scrollbar {
+  display: none;
+}
+
 #masthead-container:has(ytd-masthead[theater]) {
-  position: absolute !important;
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2200;
+  transform: translateY(-100%) !important;
+  transition: transform 150ms ease;
+}
+
+html[data-theater-header-visible]
+  #masthead-container:has(ytd-masthead[theater]) {
+  transform: translateY(0) !important;
 }
 
 ytd-watch-flexy[theater] #player-full-bleed-container.ytd-watch-flexy,
